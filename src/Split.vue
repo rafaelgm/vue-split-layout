@@ -1,109 +1,116 @@
 <script>
-export default {
+import { defineComponent, ref, computed, h, onBeforeUnmount, watch } from 'vue';
+
+export default defineComponent({
+  name: 'Split',
   props: {
-    resizeable: {type: Boolean, default: false},
-    dir: {type: String, default: 'horizontal'},
-    split: {type: String, default: '50%'}
+    resizeable: { type: Boolean, default: false },
+    dir: { type: String, default: 'horizontal' },
+    split: { type: String, default: '50%' },
+    nodeId: { type: [String, Number], default: null }
   },
-  data () {
-    return {
-      state: {
-        resizing: false,
-        split: this.split || '50%'
-      }
-    }
-  },
-  computed: {
-    splitClass () {
-      return [
-        'split',
-        this.dir,
-        this.state.resizing ? 'resizing' : '',
-        this.resizeable ? 'resizeable' : ''
-      ]
-    }
-  },
+  emits: ['splitResize'],
+  setup(props, { emit, slots }) {
+    const rootEl = ref(null);
+    const isResizing = ref(false);
+    const currentSplit = ref(props.split || '50%'); // Keep as string
 
-  methods: {
-    startResize (event) {
-      if (!this.resizeable || event.button !== 0) return
-      event.stopPropagation()
-      event.preventDefault()
-      this.state.resizing = true
+    const splitClass = computed(() => [
+      'split', props.dir, isResizing.value ? 'resizing' : '', props.resizeable ? 'resizeable' : '',
+    ]);
 
-      const drag = (event) => {
-        if (event.button !== 0) return
-        const h = this.dir === 'horizontal'
-        var splitter = (h ? this.$el.children[1].clientWidth : this.$el.children[1].clientHeight) / 2
-        var parentRect = this.$el.getBoundingClientRect()
-        var splitSize = h
-          ? (event.x - parentRect.left - splitter) / this.$el.clientWidth * 100
-          : (event.y - parentRect.top - splitter) / this.$el.clientHeight * 100
-        this.state.split = splitSize + '%'
-        this.$emit('onSplitResize', event, this, this.state.split)
-      }
-      const drop = (event) => {
-        if (event.button !== 0) return
-        this.state.resizing = false
-        document.removeEventListener('mousemove', drag)
-        document.removeEventListener('mouseup', drop)
-      }
-      document.addEventListener('mousemove', drag)
-      document.addEventListener('mouseup', drop)
-    }
+    let dragHandler = null;
+    let dropHandler = null;
+    let startRect = null; // Store parent rect at drag start
 
-  },
-  render (h) {
-    // const items = this.$slots.default.map(vnode => h('div', { class: { column: true }, vnode })
-    const items = []
-    items.push(h('div', {class: 'content', attrs: {style: 'flex-basis:' + this.state.split}}, [this.$slots.default[0]]))
-    items.push(h('div', {class: 'splitter', on: {mousedown: this.startResize}}))
-    items.push(h('div', {class: 'content'}, [this.$slots.default[1]]))
-    return h('div', {class: this.splitClass}, items)
+    const startResize = (event) => {
+      if (!props.resizeable || event.button !== 0) return;
+      event.stopPropagation(); event.preventDefault();
+      // console.log(">>> startResize called"); // DEBUG Removed
+      isResizing.value = true;
+
+      const parentElement = rootEl.value;
+      if (!parentElement) return;
+      startRect = parentElement.getBoundingClientRect(); // Get rect ONCE at start
+
+      dragHandler = (moveEvent) => {
+        if (!isResizing.value) return; // Safety check
+
+        const parentRect = startRect; // Use the rect from the start of the drag
+        if (!parentRect) return;
+
+        const isHorizontal = props.dir === 'horizontal';
+        let splitSizePercent;
+
+        const splitterElement = parentElement.children[1];
+        const splitterSize = splitterElement ? (isHorizontal ? splitterElement.clientWidth : splitterElement.clientHeight) : 0;
+
+
+        if (isHorizontal) {
+          if (parentRect.width === 0) return;
+          const position = moveEvent.clientX - parentRect.left;
+          splitSizePercent = (position / parentRect.width) * 100;
+        } else {
+          if (parentRect.height === 0) return;
+          const position = moveEvent.clientY - parentRect.top;
+          splitSizePercent = (position / parentRect.height) * 100;
+        }
+
+        splitSizePercent = Math.max(0.5, Math.min(99.5, splitSizePercent));
+        const newSplitString = `${splitSizePercent}%`;
+
+        if (newSplitString !== currentSplit.value) {
+            currentSplit.value = newSplitString;
+            emit('splitResize', moveEvent, props.nodeId, currentSplit.value);
+        }
+      };
+
+      dropHandler = (dropEvent) => {
+        // console.log(">>> dropHandler called. isResizing:", isResizing.value); // DEBUG Removed
+        isResizing.value = false;
+        startRect = null; // Reset startRect
+
+        // console.log(">>> dropHandler removing listeners..."); // DEBUG Removed
+        document.removeEventListener('mousemove', dragHandler);
+        document.removeEventListener('mouseup', dropHandler);
+
+        dragHandler = null;
+        dropHandler = null;
+        // console.log(">>> dropHandler finished cleanup"); // DEBUG Removed
+      };
+
+      document.addEventListener('mousemove', dragHandler);
+      document.addEventListener('mouseup', dropHandler);
+    };
+
+    // Cleanup listeners when component is unmounted
+    onBeforeUnmount(() => {
+        // console.log(">>> Split unmounting, removing listeners if present."); // DEBUG Removed
+      if (dragHandler) document.removeEventListener('mousemove', dragHandler);
+      if (dropHandler) document.removeEventListener('mouseup', dropHandler);
+    });
+
+    // Watch for external changes to the split prop
+    watch(() => props.split, (newSplit) => {
+        const validSplit = newSplit || '50%';
+        if (validSplit !== currentSplit.value) {
+             currentSplit.value = validSplit;
+        }
+    }, { immediate: true });
+
+    return () => {
+      const defaultSlots = slots.default ? slots.default() : [];
+      const firstPane = defaultSlots.length > 0 ? defaultSlots[0] : h('div', { class: 'missing-pane' });
+      const secondPane = defaultSlots.length > 1 ? defaultSlots[1] : h('div', { class: 'missing-pane' });
+
+      return h('div', { ref: rootEl, class: splitClass.value, 'data-node-id': props.nodeId }, [
+        h('div', { class: 'content', style: { flexBasis: currentSplit.value } }, [firstPane]),
+        h('div', { class: 'splitter', onMousedown: startResize }),
+        h('div', { class: 'content' }, [secondPane])
+      ]);
+    };
   }
-
-}
+});
 </script>
-<style>
-.split {
-  display: flex;
-  flex: 1;
-  height: 100%;
-}
 
-.split > .content {
-  position: relative;
-  display: flex;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.split > .content > * {
-  flex: 1;
-  height: 100%;
-}
-
-.split > .content:last-child {
-  flex: 1;
-}
-
-.split > .splitter {
-  flex-basis: 6px;
-}
-
-.split.vertical {
-  flex-direction: column;
-}
-
-.split.horizontal {
-  flex-direction: row;
-}
-
-.split.resizeable.vertical > .splitter {
-  cursor: row-resize;
-}
-
-.split.resizeable.horizontal > .splitter {
-  cursor: col-resize;
-}
-</style>
+<style scoped src="./Split.css"></style>

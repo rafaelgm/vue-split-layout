@@ -1,58 +1,60 @@
 {
-  "name": "vue-split-layout",
-  "description": "vue split drag layout",
-  "version": "0.0.16",
-  "main": "dist/vue-split-layout.js",
-  "author": {
-    "name": "Luis Figueiredo",
-    "email": "luisf@hexasoftware.com"
+  "name": "@rafaelgm/vue-split-layout",
+  "description": "Vue 3 component for creating draggable and resizable split layouts (forked and updated)",
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/vue-split-layout.umd.cjs",
+  "module": "./dist/vue-split-layout.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-split-layout.js",
+      "require": "./dist/vue-split-layout.umd.cjs"
+    },
+    "./style.css": "./dist/style.css"
   },
+  "author": "Rafael Gomes Monteiro",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vue-hxs/vue-split-layout"
+    "url": "https://github.com/rafaelgm/vue-split-layout.git"
   },
   "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "split",
+    "layout",
+    "split-pane",
+    "resizable",
+    "draggable",
+    "pane"
+  ],
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack serve",
-    "build": "cross-env NODE_ENV=production webpack --progress",
-    "build-demo": "cross-env NODE_ENV=development webpack --progress",
-    "prepare": "npm run build"
+    "dev": "vite --mode demo",
+    "build:lib": "vite build",
+    "build:demo": "vite build --mode demo",
+    "preview": "vite preview --mode demo --outDir docs"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "vue": "^2.6.14"
+    "lodash": "^4.17.21"
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ],
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-helper-vue-jsx-merge-props": "^2.0.3",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-jsx-event-modifiers": "^2.0.5",
-    "babel-plugin-syntax-jsx": "^6.18.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-vue-jsx": "^3.5.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-stage-2": "^6.24.1",
-    "babel-preset-stage-3": "^6.24.1",
-    "cross-env": "^5.0.5",
-    "css-loader": "^0.28.7",
-    "eslint": "^4.13.1",
-    "eslint-config-node": "^2.0.0",
-    "eslint-config-standard": "^11.0.0-beta.0",
-    "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "eslint-plugin-vue": "^4.0.0-beta.2",
-    "file-loader": "^1.1.4",
-    "html-webpack-plugin": "^5.5.0",
-    "vue-loader": "^15.9.8",
-    "vue-template-compiler": "^2.6.14",
-    "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.6.0"
+    "@vitejs/plugin-vue": "^5.0.5",
+    "cross-env": "^7.0.3",
+    "css-loader": "^7.1.2",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.26.0",
+    "sass": "^1.77.4",
+    "vite": "^5.2.12",
+    "vue": "^3.4.27",
+    "vue-loader": "^17.4.2",
+    "vue-style-loader": "^4.1.3"
   }
 }

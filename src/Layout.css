@@ -1,3 +1,10 @@
+/* Add box-sizing to containers */
+.layout-container,
+.layout-container > .views,
+.view-container {
+  box-sizing: border-box;
+}
+
 .layout-container {
   display: flex;
   flex-direction: column;
@@ -5,6 +12,7 @@
   overflow: hidden;
   position: relative;
   height: 100%;
+  width: 100%;
 }
 
 .layout-container > .preview {
@@ -12,35 +20,42 @@
   opacity: 0;
   margin: 0;
   pointer-events: none;
+  background-color: rgba(0, 100, 255, 0.3);
+  border: 1px dashed rgba(0, 50, 200, 0.5);
+  transition: opacity 0.2s ease-in-out;
+  z-index: 20;
 }
 
 .layout-container > .views {
   display: flex;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  flex-grow: 1;
+  position: relative;
+  overflow: hidden;
 }
 
 .layout-container > .drag {
   position: absolute;
   margin: 0;
   padding: 0;
-  display: none;
   cursor: move;
+  z-index: 30;
 }
 
-/* child of drag */
-.layout-container > .drag * {
-  pointer-events: none !important;
+.view-container {
+    flex-grow: 1; flex-shrink: 1; min-width: 10px; min-height: 10px;
+    height: 100%; width: 100%; overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
 }
 
-.layout-container > .drag.dragging {
-  display: block;
+.view-container.empty-pane {
+    background-color: #f0f0f0; border: 1px dashed #ccc; align-items: center;
+    justify-content: center; color: #999; font-size: 0.8em;
 }
 
-.layout-container .drag > .view {
-  height: 100%;
-  width: 100%;
-}
+.layout-container.edit .view-container { border: 1px dashed #aaa; cursor: move; }
+.layout-container.edit .view-container.empty-pane { border: 1px dashed #ccc; cursor: default; }
+
+.view-container > * { flex-grow: 1; overflow: auto; margin: 0; }
+
+[pane-drag-handle] { cursor: grab; }
+[pane-drag-handle]:active { cursor: grabbing; }

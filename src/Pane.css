@@ -1,0 +1,42 @@
+.pane {
+	position: relative;
+	overflow: hidden;
+	flex: 1 1 auto;
+	height: 100%;
+	width: 100%;
+	flex-direction: column;
+	/* Let children decide pointer events initially */
+	/* pointer-events: none; was causing issues potentially */
+  }
+  
+  .pane > .header {
+	height: 40px; /* Consider using CSS variables */
+	padding: 10px;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	flex-shrink: 0; /* Prevent header from shrinking */
+	/* Make header draggable if needed, or add specific handle */
+	/* cursor: move; */
+  }
+  
+  .pane > .content {
+	/* Let content fill remaining space */
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: auto;
+	pointer-events: auto; /* Allow interaction with content */
+	position: relative; /* Changed from absolute */
+  }
+  
+  /* Ensure the container itself takes up space */
+  .pane-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+  }

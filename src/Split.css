@@ -1,0 +1,83 @@
+.split {
+	display: flex;
+	flex: 1;
+	height: 100%;
+	width: 100%; /* Ensure split takes full width */
+	overflow: hidden; /* Prevent content overflow */
+	box-sizing: border-box; /* Add */
+  }
+  
+  .split > .content {
+	position: relative;
+	display: flex; /* Allow content to flex */
+	box-sizing: border-box; /* Add */
+	overflow: hidden; /* Hide overflow within pane */
+	/* Default flex properties */
+	flex-grow: 1; /* Allow shrinking/growing by default */
+	flex-shrink: 1;
+	/* flex-basis is set inline for first child */
+  }
+  
+  /* Attempt to make flex-basis more precise on first child */
+  .split > .content:first-child {
+	  flex-grow: 0; /* Don't allow first pane to grow beyond basis */
+	  flex-shrink: 0; /* Don't allow first pane to shrink below basis */
+  }
+  
+  
+  /* Ensure direct children of content take up space */
+  .split > .content > * {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box; /* Add */
+  }
+  
+  
+  .split > .content:last-child {
+	 flex-basis: auto !important; /* Override potential inline style from first pane */
+	 flex-grow: 1; /* Ensure it takes remaining space */
+	 flex-shrink: 1; /* Allow shrinking if needed */
+  }
+  
+  
+  .split > .splitter {
+	flex-basis: 8px; /* Default width */
+	flex-shrink: 0;
+	flex-grow: 0;
+	background-color: #ccc;
+	position: relative;
+	z-index: 10;
+	box-sizing: border-box; /* Add */
+  }
+  
+  .split.vertical {
+	flex-direction: column;
+  }
+  .split.vertical > .splitter {
+	 height: 8px; width: 100%; flex-basis: auto;
+  }
+  
+  
+  .split.horizontal {
+	flex-direction: row;
+  }
+  .split.horizontal > .splitter {
+	 width: 8px; height: 100%;
+  }
+  
+  
+  .split.resizeable.vertical > .splitter {
+	cursor: row-resize;
+  }
+  
+  .split.resizeable.horizontal > .splitter {
+	cursor: col-resize;
+  }
+  
+  .split.resizeable > .splitter:hover,
+  .split.resizeable.resizing > .splitter {
+	background-color: #aaa;
+	transition: background-color 0.2s ease-in-out;
+  }
